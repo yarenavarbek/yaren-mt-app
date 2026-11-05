@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AuraTranslate | Gemini Destekli Akıllı Çeviri</title>
+  <meta name="description" content="Gemini API ile çalışan, alan ve üslup ayarlı, terimce (glossary) destekli yapay zekâ makine çevirisi." />
+  
+  <!-- Modern Tipografi (Google Fonts) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-wrapper">
+    <!-- Üst Başlık Bölümü -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m5 8 6 6"/>
+            <path d="m4 14 6-6 2-3"/>
+            <path d="M2 5h12"/>
+            <path d="M7 2h1"/>
+            <path d="m22 22-5-10-5 10"/>
+            <path d="M14 18h6"/>
+          </svg>
+        </div>
+        <div>
+          <h1>AuraTranslate</h1>
+          <span class="brand-tag">Gemini AI Destekli Profesyonel Çevirmen</span>
+        </div>
+      </div>
+      <div class="header-badges">
+        <span class="badge badge-gemini">⚡ Gemini 3.5 Flash-Lite (Latest)</span>
+        <span class="badge badge-pro">🎯 Terimce & Alan Odaklı</span>
+      </div>
+    </header>
+
+    <!-- Ayar Seçenekleri (Alan & Üslup & Terimce Butonu) -->
+    <section class="toolbar-section">
+      <div class="config-grid">
+        <!-- Alan Seçimi -->
+        <div class="config-item">
+          <label for="domainSelect">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+            Çeviri Alanı
+          </label>
+          <select id="domainSelect" class="styled-select">
+            <option value="general">Genel (Standart Çeviri)</option>
+            <option value="literary">Edebi (Roman, Şiir, Öykü, Ahenkli)</option>
+            <option value="medical">Tıp & Sağlık (Klinik Terminoloji)</option>
+            <option value="legal">Hukuk & Mevzuat (Resmi Terimler)</option>
+            <option value="academic">Akademik & Bilimsel</option>
+            <option value="technical">Teknik & Bilişim / Mühendislik</option>
+          </select>
+        </div>
+
+        <!-- Üslup Seçimi -->
+        <div class="config-item">
+          <label for="styleSelect">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            Üslup / Hitap Tonu
+          </label>
+          <select id="styleSelect" class="styled-select">
+            <option value="formal">Resmi (Siz dili, kurumsal, saygılı)</option>
+            <option value="casual">Gündelik (Sen dili, sıcak, samimi)</option>
+            <option value="poetic">Şiirsel / Akıcı Lirik</option>
+          </select>
+        </div>
+
+        <!-- Terimce Paneli Açma Butonu -->
+        <div class="config-item glossary-toggle-wrap">
+          <label class="invisible-mobile-label">&nbsp;</label>
+          <button id="toggleGlossaryBtn" class="btn btn-secondary glossary-toggle-btn" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <span>Özel Terimce (Glossary)</span>
+            <span id="glossaryCountBadge" class="count-tag">0 terim</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Açılır-Kapanır Terimce Bölümü -->
+      <div id="glossaryContainer" class="glossary-drawer hidden">
+        <div class="glossary-header">
+          <div>
+            <h3>📖 Özel Terimce (Glossary) Yönetimi</h3>
+            <p>Her satıra bir eşleşme yazın: <code>kaynak terim = hedef terim</code>. Model bu terimleri çeviride harfiyen kullanacaktır.</p>
+          </div>
+          <button id="closeGlossaryBtn" class="icon-btn" title="Kapat">✕</button>
+        </div>
+        <textarea id="glossaryInput" placeholder="Örnek:
+artificial intelligence = yapay zekâ
+machine learning = makine öğrenimi
+deep learning = derin öğrenme
+pipeline = işlem hattı"></textarea>
+        <div class="glossary-footer">
+          <small class="muted-text">İpucu: Terimleri <code>=</code>, <code>-&gt;</code> veya <code>:</code> işaretiyle ayırabilirsiniz.</small>
+          <button id="saveGlossaryBtn" class="btn btn-sm btn-primary">Tamam</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dil Çubuğu (Kaynak - Hedef ve Değiştir Butonu) -->
+    <div class="language-bar">
+      <div class="lang-select-box">
+        <span class="lang-label">Kaynak Dil:</span>
+        <select id="sourceLangSelect" class="lang-dropdown">
+          <option value="İngilizce" selected>İngilizce</option>
+          <option value="Türkçe">Türkçe</option>
+          <option value="İspanyolca">İspanyolca</option>
+          <option value="Almanca">Almanca</option>
+          <option value="Fransızca">Fransızca</option>
+          <option value="İtalyanca">İtalyanca</option>
+          <option value="Rusça">Rusça</option>
+          <option value="Arapça">Arapça</option>
+          <option value="Japonca">Japonca</option>
+          <option value="Otomatik Algıla">Otomatik Algıla</option>
+        </select>
+      </div>
+
+      <button id="swapLanguagesBtn" class="icon-btn swap-btn" title="Dilleri Değiştir (İngilizce ↔ Türkçe)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 16V4m0 0L3 8m4-4l4 4"/>
+          <path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
+        </svg>
+      </button>
+
+      <div class="lang-select-box">
+        <span class="lang-label">Hedef Dil:</span>
+        <select id="targetLangSelect" class="lang-dropdown">
+          <option value="Türkçe" selected>Türkçe</option>
+          <option value="İngilizce">İngilizce</option>
+          <option value="İspanyolca">İspanyolca</option>
+          <option value="Almanca">Almanca</option>
+          <option value="Fransızca">Fransızca</option>
+          <option value="İtalyanca">İtalyanca</option>
+          <option value="Rusça">Rusça</option>
+          <option value="Arapça">Arapça</option>
+          <option value="Japonca">Japonca</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Hata Bildirim Alanı (Varsayılan olarak gizli) -->
+    <div id="errorBanner" class="error-banner hidden" role="alert">
+      <div class="error-icon">⚠️</div>
+      <div class="error-content">
+        <h4 id="errorTitle">Bir Hata Oluştu</h4>
+        <p id="errorMessage">Hata açıklaması burada yer alır.</p>
+      </div>
+      <button id="dismissErrorBtn" class="icon-btn error-close-btn" title="Kapat">✕</button>
+    </div>
+
+    <!-- Ana Çeviri Alanı (İki Sütunlu Kartlar) -->
+    <main class="translator-grid">
+      <!-- Sol Sütun: Kaynak Metin -->
+      <div class="panel source-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span>Kaynak Metin</span>
+            <span id="sourceCharCount" class="char-count">0 karakter</span>
+          </div>
+          <div class="panel-actions">
+            <button id="pasteBtn" class="text-action-btn" title="Panodan Yapıştır">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+              <span>Yapıştır</span>
+            </button>
+            <button id="clearSourceBtn" class="text-action-btn" title="Metni Temizle">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              <span>Temizle</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="textarea-wrapper">
+          <textarea id="sourceText" placeholder="Çevrilmesini istediğiniz metni buraya yazın veya yapıştırın... (Örnek: The novel explores the bittersweet solitude of modern life.)" spellcheck="true"></textarea>
+        </div>
+
+        <div class="panel-footer">
+          <div class="keyboard-hint">
+            <kbd>Ctrl</kbd> + <kbd>Enter</kbd> ile hızlı çeviri
+          </div>
+          <button id="translateBtn" class="btn btn-primary translate-action-btn">
+            <span class="btn-spinner hidden" id="btnSpinner"></span>
+            <span class="btn-icon">⚡</span>
+            <span id="btnText">Çevir</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Sağ Sütun: Hedef Çeviri -->
+      <div class="panel target-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span>Çeviri</span>
+            <span id="targetCharCount" class="char-count">0 karakter</span>
+          </div>
+          <div class="panel-actions">
+            <button id="copyBtn" class="text-action-btn" title="Çeviriyi Kopyala" disabled>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span id="copyBtnText">Kopyala</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="textarea-wrapper target-wrapper">
+          <!-- Yükleniyor Göstergesi -->
+          <div id="loadingIndicator" class="loading-overlay hidden">
+            <div class="aura-loader"></div>
+            <p>Gemini yapay zekâsı çeviriyor...</p>
+            <span class="muted-text">Alan ve üslup kuralları uygulanıyor</span>
+          </div>
+          
+          <textarea id="targetText" placeholder="Çeviri burada görüntülenecektir..." readonly></textarea>
+        </div>
+
+        <div class="panel-footer target-footer">
+          <span id="translationMeta" class="meta-info">Hazır</span>
+          <div id="copyToast" class="toast-notice hidden">✓ Kopyalandı!</div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bilgi Notu -->
+    <footer class="app-bottom-info">
+      <p>💡 <strong>İpucu:</strong> Terimce listesine yazdığınız sözcükler kesin kural olarak kabul edilir. Gemini API doğrudan orijinal üslubu korur ve ekstra tırnak/yorum eklemez.</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "gemini-translator-app",
+  "version": "1.0.0",
+  "description": "Gemini API ile güçlendirilmiş akıllı makine çevirisi uygulaması",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}
